@@ -13,24 +13,59 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
     def handlePower(self, samsungRemote, payload):
         samsungRemote.power()
 
+    def handleFastFoward(self, samsungRemote, payload):
+        samsungRemote.fastforward()
+
+    def handleRewind(self, samsungRemote, payload):
+        samsungRemote.rewind()
+
+    def handlePlay(self, samsungRemote, payload):
+        samsungRemote.play()
+
+    def handlePause(self, samsungRemote, payload):
+        samsungRemote.pause()
+
     def handleSkipChannels(self, samsungRemote, payload):
         samsungRemote.incrementChannel(int(payload['channelCount']))
+
+    def handleChangeChannels(self, samsungRemote, payload):
+        channel = payload['channel']
+        try:
+            channelNumber = channel['number']
+            samsungRemote.goToChannel(channelNumber)
+            return
+        except KeyError:
+            pass
+        channelName = ''
+        channelName = channel.get('callSign')
+        if not channelName:
+            channelName = channel.get('affiliateCallSign')
+        if not channelName:
+            try:
+                channelName = payload['channelMetadata']['name']
+            except KeyError:
+                pass
+        if channelName:
+            samsungRemote.goToChannelName(channelName)
+        else:
+            logging.error('Unable to extract channel from payload {}'.format(payload))
+
 
     command_handlers = {
         ('Alexa.PowerController', 'TurnOn'): handlePower,
         ('Alexa.PowerController', 'TurnOff'): handlePower,
         ('Alexa.StepSpeaker', 'AdjustVolume'): handleAdjustVolume,
         ('Alexa.StepSpeaker', 'SetMute'): handleMute,
-        # ('Alexa.PlaybackController', 'FastForward'): handlePower,
+        ('Alexa.PlaybackController', 'FastForward'): handleFastFoward,
         # ('Alexa.PlaybackController', 'Next'): handlePower,
-        # ('Alexa.PlaybackController', 'Pause'): handlePower,
-        # ('Alexa.PlaybackController', 'Play'): handlePower,
+        ('Alexa.PlaybackController', 'Pause'): handlePause,
+        ('Alexa.PlaybackController', 'Play'): handlePlay,
         # ('Alexa.PlaybackController', 'Previous'): handlePower,
-        # ('Alexa.PlaybackController', 'Rewind'): handlePower,
+        ('Alexa.PlaybackController', 'Rewind'): handleRewind,
         # ('Alexa.PlaybackController', 'StartOver'): handlePower,
         # ('Alexa.PlaybackController', 'Stop'): handlePower,
         ('Alexa.ChannelController', 'SkipChannels'): handleSkipChannels,
-        #('Alexa.ChannelController', 'SkipChannels'): handleSkipChannels,
+        ('Alexa.ChannelController', 'ChangeChannel'): handleChangeChannels,
         ('Alexa.InputController', 'SelectInput'): handlePower
 
     }

@@ -1,8 +1,10 @@
 import samsungctl
 import time
 import subprocess
+import logging
 
 MAC_ADDRESS = '40-16-3b-18-60-33'
+STATIC_IP = '192.168.0.15'
 
 config = {
     "name": "samsungctl",
@@ -28,8 +30,7 @@ def getIp():
 
 
 class SamsungRemote(samsungctl.Remote):
-    _key_interval = .3
-    def __init__(self, ip='192.168.0.15', port=8001):
+    def __init__(self, ip=STATIC_IP, port=8001):
         config = {
             "name": "samsungctl",
             "description": "Alexa",
@@ -37,9 +38,10 @@ class SamsungRemote(samsungctl.Remote):
             "host": ip,
             "port": port,
             "method": "websocket",
-            "timeout": 10,
+            "timeout": 3,
         }
         super().__init__(config)
+        self.remote._key_interval = .2
 
     def incrementVolume(self, n=1):
         if n > 0:
@@ -60,13 +62,157 @@ class SamsungRemote(samsungctl.Remote):
             for i in range(n * -1):
                 self.control('KEY_CHDOWN')
 
-    def goToChannel(self, n):
+    def lastChannel(self):
+        self.control('KEY_RETURN')
+
+    def goToChannel_fast(self, n):
         for digit in str(n):
+            time.sleep(.9)
             self.control('KEY_%s' % digit)
         self.control("KEY_ENTER")
 
+    def goToChannel(self, n):
+        self.toggleNumbers()
+        time.sleep(1)
+        prev = 6
+        for i in str(n):
+            num = int(i)
+            if num == 0:
+                num = 10
+            for j in range(abs(prev - num)):
+                if num > prev:
+                    self.control('KEY_RIGHT')
+                else:
+                    self.control('KEY_LEFT')
+            prev = num
+            self.control('KEY_ENTER')
+        self.control('KEY_UP')
+        self.control('KEY_ENTER')
+
+    def goToChannelName(self, channelName):
+        try:
+            channel = CHANNEL_LIST[channelName.upper()]
+            self.goToChannel(channel)
+        except KeyError:
+            logging.error('Unable to find channel with name {}'.format(channelName))
+
     def power(self):
         self.control("KEY_POWER")
+
+    def toggleNumbers(self):
+        self.control('KEY_MORE')
+
+    def pause(self):
+        self.control('KEY_PAUSE')
+
+    def play(self):
+        self.control('KEY_PLAY')
+
+    def record(self):
+        self.control('KEY_REC')
+
+    def fastfoward(self, speed = 2):
+        for i in range(speed):
+            self.control('KEY_FF')
+
+    def rewind(self, speed = 2):
+        for i in range(speed):
+            self.control('KEY_REWIND')
+
+CHANNEL_LIST = {
+    'HSN': 601,
+    'WCBS': 602,
+    'WNBC': 604,
+    'FOX NEW YORK': 605,
+    'UNIVISION': 606,
+    'WABC': 607,
+    'MY NINE': 609,
+    'THE CW NEW YORK': 611,
+    'QVC': 612,
+    'PBS': 613,
+    'WFUT': 614,
+    'ION': 615,
+    'WRNN': 616,
+    'TELEMUNDO': 617,
+    'LIVEWELL': 618,
+    'BET': 619,
+    'A AND E': 620,
+    'BRAVO': 621,
+    'TBS': 622,
+    'TNT': 623,
+    'USA': 624,
+    'SPIKE TV': 625,
+    'FX': 626,
+    'WGN AMERICA': 627,
+    'MAVTV': 628,
+    'SYFY': 630,
+    'ANIMAL PLANET': 631,
+    'COMEDY CENTRAL': 632,
+    'CARTOON NETWORK': 633,
+    'FUSE': 635,
+    'E': 637,
+    'WE TV': 638,
+    'LIFETIME': 639,
+    'LIFETIME MOVIE NETWORK': 640,
+    'FREEFORM': 641,
+    'FOOD NETWORK': 642,
+    'HGTV': 643,
+    'HALLMARK CHANNEL': 644,
+    'DESTINATION AMERICA': 645,
+    'DISNEY JUNIOR': 646,
+    'DISNEY CHANNEL': 647,
+    'DISNEY XD': 648,
+    'NICKELODEON': 649,
+    'CNN': 650,
+    'CNBC': 651,
+    'MSNBC': 652,
+    'FOX NEWS CHANNEL': 653,
+    'FOX BUSINESS NETWORK': 654,
+    'THE WEATHER CHANNEL': 655,
+    'HLN': 656,
+    'HALLMARK MOVIE AND MYSTERY': 657,
+    'TRUTV': 658,
+    'INVESTIGATIVE DISCOVERY': 659,
+    'TRAVEL CHANNEL': 660,
+    'DISCOVERY': 661,
+    'HISTORY CHANNEL': 662,
+    'TLC': 663,
+    'FYI': 664,
+    'CRIME AND INVESTIGATION': 665,
+    'IFC': 666,
+    'AMC': 667,
+    'STARZ ENCORE': 668,
+    'TV LAND': 669,
+    'NATIONAL GEOGRAPHIC': 670,
+    'SCIENCE': 671,
+    'BLOOMBERG': 672,
+    'GSN': 673,
+    'MTV2': 674,
+    'MTV': 675,
+    'VH1': 676,
+    'CMT': 677,
+    'MSG OVERFLOW': 678,
+    'MSG PLUS OVERFLOW': 679,
+    'ESPNU': 680,
+    'ESPN': 681,
+    'ESPN 2': 682,
+    'ESPN NEWS': 683,
+    'NFL RED ZONE': 684,
+    'SPORTSNET NEW YORK': 685,
+    'YES': 686,
+    'MSG': 687,
+    'MSG PLUS': 688,
+    'FOX SPORTS': 689,
+    'NFL NETWORK': 690,
+    'NBC SPORTS NETWORK': 691,
+    'TENNIS CHANNEL': 692,
+    'NHL NETWORK': 693,
+    'GOLF CHANNEL': 694,
+    'MLB NETWORK': 695,
+    'OUTDOOR CHANNEL': 696,
+    'NBA TV': 697,
+    'FXX': 698
+}
 '''
 KEY_0
 KEY_1
