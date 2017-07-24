@@ -5,6 +5,7 @@ import logging
 
 MAC_ADDRESS = '40-16-3b-18-60-33'
 STATIC_IP = '192.168.0.15'
+PUBLIC_HOSTNAME = 'dwild428.hopto.org'
 
 config = {
     "name": "samsungctl",

@@ -4,18 +4,8 @@ import time
 
 class Tester(unittest.TestCase):
     r = remote.SamsungRemote()
-    r.goToChannel_slow(555)
-    # r.toggleNumbers()
-    # time.sleep(.8)
-    # r.control('KEY_ENTER')  # 6
-    # r.control('KEY_LEFT')
-    # r.control('KEY_LEFT')
-    # r.control('KEY_LEFT')
-    # r.control('KEY_ENTER') #3
-    # r.control('KEY_LEFT')
-    # r.control('KEY_ENTER')
-    # r.control('KEY_UP')
-    # r.control('KEY_ENTER')
+    #r.goToChannel(555)
+    r.goToChannel(20)
 
 if __name__ == "__main__":
     unittest.main()
