@@ -42,7 +42,7 @@ class SamsungRemote(samsungctl.Remote):
             "timeout": 3,
         }
         super().__init__(config)
-        self.remote._key_interval = .2
+        self.remote._key_interval = .3
 
     def incrementVolume(self, n=1):
         if n > 0:
@@ -125,10 +125,13 @@ CHANNEL_LIST = {
     'WCBS': 602,
     'WNBC': 604,
     'FOX NEW YORK': 605,
+    'FOX': 605,
     'UNIVISION': 606,
     'WABC': 607,
+    'ABC': 607,
     'MY NINE': 609,
     'THE CW NEW YORK': 611,
+    'CW NEW YORK': 611,
     'QVC': 612,
     'PBS': 613,
     'WFUT': 614,
@@ -189,6 +192,7 @@ CHANNEL_LIST = {
     'BLOOMBERG': 672,
     'GSN': 673,
     'MTV2': 674,
+    'MTV TWO': 674,
     'MTV': 675,
     'VH1': 676,
     'CMT': 677,
@@ -197,8 +201,10 @@ CHANNEL_LIST = {
     'ESPNU': 680,
     'ESPN': 681,
     'ESPN 2': 682,
+    'ESPN TWO': 682,
     'ESPN NEWS': 683,
     'NFL RED ZONE': 684,
+    'RED ZONE': 684,
     'SPORTSNET NEW YORK': 685,
     'YES': 686,
     'MSG': 687,

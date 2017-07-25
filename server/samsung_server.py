@@ -2,10 +2,17 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from remote import SamsungRemote
 import logging
+from threading import Thread
 
 class SamsungHttpHandler(BaseHTTPRequestHandler):
     def handleAdjustVolume(self, samsungRemote, payload):
-        samsungRemote.incrementVolume(int(payload['volumeSteps']))
+        steps = int(payload['volumeSteps'])
+        #Default increment is 10, which is way too much
+        if steps == 10:
+            steps = 2
+        elif steps == -10:
+            steps = -2
+        samsungRemote.incrementVolume(steps)
 
     def handleMute(self, samsungRemote, payload):
         samsungRemote.toggleMute()
@@ -67,7 +74,6 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
         ('Alexa.ChannelController', 'SkipChannels'): handleSkipChannels,
         ('Alexa.ChannelController', 'ChangeChannel'): handleChangeChannels,
         ('Alexa.InputController', 'SelectInput'): handlePower
-
     }
 
 
@@ -88,6 +94,7 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
         self._set_headers()
         data_string = self.rfile.read(int(self.headers['Content-Length']))
         data = json.loads(data_string.decode('utf-8'))
+        logging.info(data['directive'])
         try:
             namespace = data['directive']['header']['namespace']
             name = data['directive']['header']['name']
@@ -103,13 +110,13 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
 
         remote = SamsungRemote()
         try:
-            self.command_handlers[(namespace, name)](self, remote, payload)
+            handler = Thread(target=self.command_handlers[(namespace, name)](self, remote, payload))
         except KeyError:
             logging.error('Unhandled command namespace = {namespace}, name = {name}'.format(name = name, namespace = namespace))
+        handler.start()
 
-
-def run(server_class=HTTPServer, handler_class=SamsungHttpHandler, port=80):
-    server_address = ('localhost', port)
+def run(server_class=HTTPServer, handler_class=SamsungHttpHandler, port=81):
+    server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     httpd.serve_forever()
 

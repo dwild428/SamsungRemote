@@ -92,3 +92,5 @@ ENV/
 #django sqllite
 db.sqlite3
 
+#zip
+*.zip
