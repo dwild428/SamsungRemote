@@ -107,6 +107,7 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         #TODO: call self.wfile.flush() to actually send the response
+        #See https://stackoverflow.com/questions/6594418/simplehttprequesthandler-close-connection-before-returning-from-do-post-method
 
         remote = SamsungRemote()
         try:
