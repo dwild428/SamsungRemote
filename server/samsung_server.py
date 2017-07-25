@@ -2,7 +2,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from remote import SamsungRemote
 import logging
-from threading import Thread
 
 class SamsungHttpHandler(BaseHTTPRequestHandler):
     def handleAdjustVolume(self, samsungRemote, payload):
@@ -110,10 +109,10 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
 
         remote = SamsungRemote()
         try:
-            handler = Thread(target=self.command_handlers[(namespace, name)](self, remote, payload))
+            handler = self.command_handlers[(namespace, name)]
         except KeyError:
             logging.error('Unhandled command namespace = {namespace}, name = {name}'.format(name = name, namespace = namespace))
-        handler.start()
+        handler(self, remote, payload)
 
 def run(server_class=HTTPServer, handler_class=SamsungHttpHandler, port=81):
     server_address = ('', port)
