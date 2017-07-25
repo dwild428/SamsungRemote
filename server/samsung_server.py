@@ -106,6 +106,7 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.end_headers()
+        #TODO: call self.wfile.flush() to actually send the response
 
         remote = SamsungRemote()
         try:
