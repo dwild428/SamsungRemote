@@ -7,16 +7,6 @@ MAC_ADDRESS = '40-16-3b-18-60-33'
 STATIC_IP = '192.168.0.15'
 PUBLIC_HOSTNAME = 'dwild428.hopto.org'
 
-config = {
-    "name": "samsungctl",
-    "description": "PC",
-    "id": "",
-    "host": "192.168.0.7",
-    "port": 8001,
-    "method": "websocket",
-    "timeout": 10,
-}
-
 def getIp():
     arp = subprocess.Popen(('arp', '-a'), stdout=subprocess.PIPE)
     try:
@@ -30,9 +20,9 @@ def getIp():
     return output.split()[0].decode('utf-8')
 
 
-class SamsungRemote(samsungctl.Remote):
+class SamsungRemote:
     def __init__(self, ip=STATIC_IP, port=8001):
-        config = {
+        self.config = {
             "name": "samsungctl",
             "description": "Alexa",
             "id": "",
@@ -41,54 +31,63 @@ class SamsungRemote(samsungctl.Remote):
             "method": "websocket",
             "timeout": 3,
         }
-        super().__init__(config)
-        self.remote._key_interval = .3
+
+    def _remote(self, delay = 0.5):
+        r = samsungctl.Remote(self.config)
+        r._key_interval = delay
+        return r
 
     def incrementVolume(self, n=1):
-        if n > 0:
-            for i in range(n):
-                self.control('KEY_VOLUP')
-        else:
-            for i in range(n*-1):
-                self.control('KEY_VOLDOWN')
+        with self._remote() as remote:
+            if n > 0:
+                for i in range(n):
+                    remote.control('KEY_VOLUP')
+            else:
+                for i in range(n*-1):
+                    remote.control('KEY_VOLDOWN')
 
     def toggleMute(self):
-        self.control('KEY_MUTE')
+        with self._remote() as remote:
+            remote.control('KEY_MUTE')
 
     def incrementChannel(self, n=1):
-        if n > 0:
-            for i in range(n):
-                self.control('KEY_CHUP')
-        else:
-            for i in range(n * -1):
-                self.control('KEY_CHDOWN')
+        with self._remote() as remote:
+            if n > 0:
+                for i in range(n):
+                    remote.control('KEY_CHUP')
+            else:
+                for i in range(n * -1):
+                    remote.control('KEY_CHDOWN')
 
     def lastChannel(self):
-        self.control('KEY_RETURN')
+        with self._remote() as remote:
+            remote.control('KEY_RETURN')
 
     def goToChannel_fast(self, n):
-        for digit in str(n):
-            time.sleep(.9)
-            self.control('KEY_%s' % digit)
-        self.control("KEY_ENTER")
+        with self._remote() as remote:
+            for digit in str(n):
+                time.sleep(.9)
+                remote.control('KEY_%s' % digit)
+            remote.control("KEY_ENTER")
 
     def goToChannel(self, n):
-        self.toggleNumbers()
-        time.sleep(1)
-        prev = 6
-        for i in str(n):
-            num = int(i)
-            if num == 0:
-                num = 10
-            for j in range(abs(prev - num)):
-                if num > prev:
-                    self.control('KEY_RIGHT')
-                else:
-                    self.control('KEY_LEFT')
-            prev = num
-            self.control('KEY_ENTER')
-        self.control('KEY_UP')
-        self.control('KEY_ENTER')
+        with self._remote(delay = 0.3) as remote:
+            remote.control('KEY_MORE')
+            time.sleep(1)
+            prev = 6
+            for i in str(n):
+                num = int(i)
+                if num == 0:
+                    num = 10
+                for j in range(abs(prev - num)):
+                    if num > prev:
+                        remote.control('KEY_RIGHT')
+                    else:
+                        remote.control('KEY_LEFT')
+                prev = num
+                remote.control('KEY_ENTER')
+            remote.control('KEY_UP')
+            remote.control('KEY_ENTER')
 
     def goToChannelName(self, channelName):
         try:
@@ -98,27 +97,34 @@ class SamsungRemote(samsungctl.Remote):
             logging.error('Unable to find channel with name {}'.format(channelName))
 
     def power(self):
-        self.control("KEY_POWER")
+        with self._remote() as remote:
+            remote.control("KEY_POWER")
 
     def toggleNumbers(self):
-        self.control('KEY_MORE')
+        with self._remote() as remote:
+            remote.control('KEY_MORE')
 
     def pause(self):
-        self.control('KEY_PAUSE')
+        with self._remote() as remote:
+            remote.control('KEY_PAUSE')
 
     def play(self):
-        self.control('KEY_PLAY')
+        with self._remote() as remote:
+            remote.control('KEY_PLAY')
 
     def record(self):
-        self.control('KEY_REC')
+        with self._remote() as remote:
+            remote.control('KEY_REC')
 
     def fastfoward(self, speed = 2):
-        for i in range(speed):
-            self.control('KEY_FF')
+        with self._remote() as remote:
+            for i in range(speed):
+                remote.control('KEY_FF')
 
     def rewind(self, speed = 2):
-        for i in range(speed):
-            self.control('KEY_REWIND')
+        with self._remote() as remote:
+            for i in range(speed):
+                remote.control('KEY_REWIND')
 
 CHANNEL_LIST = {
     'HSN': 601,

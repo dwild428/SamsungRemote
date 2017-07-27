@@ -30,7 +30,7 @@ class Tester(unittest.TestCase):
             }
         }
         resp = requests.post('http://dwild428.hopto.org:81', json=request, timeout = 10)
-        self.assertEquals(resp.code, 200)
+        self.assertEqual(resp.status_code, requests.codes.ok)
 
 if __name__ == "__main__":
     unittest.main()
