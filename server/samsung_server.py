@@ -93,14 +93,10 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.flush()
 
-    # def do_GET(self):
-    #     self._set_headers()
-
     def do_HEAD(self):
         self._set_headers()
 
     def do_POST(self):
-        #self._set_headers()
         data_string = self.rfile.read(int(self.headers['Content-Length']))
         data = json.loads(data_string.decode('utf-8'))
         logging.info(data['directive'])
