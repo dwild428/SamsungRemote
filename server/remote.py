@@ -33,12 +33,12 @@ class SamsungRemote:
         }
 
     def _remote(self, delay = 0.5):
+        samsungctl.remote_websocket.RemoteWebsocket._key_interval = delay
         r = samsungctl.Remote(self.config)
-        r._key_interval = delay
         return r
 
     def incrementVolume(self, n=1):
-        with self._remote() as remote:
+        with self._remote(delay = .3) as remote:
             if n > 0:
                 for i in range(n):
                     remote.control('KEY_VOLUP')
@@ -51,7 +51,7 @@ class SamsungRemote:
             remote.control('KEY_MUTE')
 
     def incrementChannel(self, n=1):
-        with self._remote() as remote:
+        with self._remote(delay = .3) as remote:
             if n > 0:
                 for i in range(n):
                     remote.control('KEY_CHUP')
@@ -73,7 +73,7 @@ class SamsungRemote:
     def goToChannel(self, n):
         with self._remote(delay = 0.3) as remote:
             remote.control('KEY_MORE')
-            time.sleep(1)
+            time.sleep(1.5)
             prev = 6
             for i in str(n):
                 num = int(i)

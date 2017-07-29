@@ -25,7 +25,7 @@ class Tester(unittest.TestCase):
                     }
                 },
                 "payload": {
-                    "volumeSteps": -10
+                    "volumeSteps": -1
                 }
             }
         }
