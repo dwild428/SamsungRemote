@@ -83,6 +83,16 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
+    def _send_response(self, code, msg = None):
+        print('Sending response {code}'.format(code = code))
+        if code == 200:
+            self.send_response(code)
+        else:
+            self.send_error(code, msg)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.flush()
+
     # def do_GET(self):
     #     self._set_headers()
 
@@ -90,30 +100,28 @@ class SamsungHttpHandler(BaseHTTPRequestHandler):
         self._set_headers()
 
     def do_POST(self):
-        self._set_headers()
+        #self._set_headers()
         data_string = self.rfile.read(int(self.headers['Content-Length']))
         data = json.loads(data_string.decode('utf-8'))
         logging.info(data['directive'])
+        print('Received request {}'.format(data))
         try:
             namespace = data['directive']['header']['namespace']
             name = data['directive']['header']['name']
             payload = data['directive']['payload']
         except KeyError:
             logging.error('Bad request {}'.format(data))
-            self.send_response(400)
-            self.end_headers()
+            self._send_response(400)
             return
-
-        self.send_response(200)
-        self.end_headers()
-        #TODO: call self.wfile.flush() to actually send the response
-        #See https://stackoverflow.com/questions/6594418/simplehttprequesthandler-close-connection-before-returning-from-do-post-method
-
         remote = SamsungRemote()
         try:
             handler = self.command_handlers[(namespace, name)]
         except KeyError:
-            logging.error('Unhandled command namespace = {namespace}, name = {name}'.format(name = name, namespace = namespace))
+            errmsg = 'Unhandled command namespace = {namespace}, name = {name}'.format(name = name, namespace = namespace)
+            logging.error(errmsg)
+            self._send_response(400, errmsg)
+            return
+        self._send_response(200)
         handler(self, remote, payload)
 
 def run(server_class=HTTPServer, handler_class=SamsungHttpHandler, port=81):
