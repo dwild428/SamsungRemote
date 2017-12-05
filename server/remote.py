@@ -46,7 +46,7 @@ class SamsungRemote:
                     remote.control('KEY_VOLDOWN')
 
     def toggleMute(self):
-        with self._remote() as remote:
+        with self._remote(delay = 1) as remote:
             remote.control('KEY_MUTE')
 
     def incrementChannel(self, n=1):
