@@ -3,14 +3,13 @@ import time
 import subprocess
 import logging
 
-MAC_ADDRESS = '40-16-3b-18-60-33'
 STATIC_IP = '192.168.0.15'
 PUBLIC_HOSTNAME = 'dwild428.hopto.org'
 
-def getIp():
+def getIp(mac_address):
     arp = subprocess.Popen(('arp', '-a'), stdout=subprocess.PIPE)
     try:
-        output = subprocess.check_output(('FINDSTR', MAC_ADDRESS), stdin=arp.stdout)
+        output = subprocess.check_output(('FINDSTR', mac_address), stdin=arp.stdout)
     except subprocess.CalledProcessError:
         print('Unable to find device')
         return
@@ -105,11 +104,11 @@ class SamsungRemote:
             remote.control('KEY_MORE')
 
     def pause(self):
-        with self._remote() as remote:
+        with self._remote(delay = 1) as remote:
             remote.control('KEY_PAUSE')
 
     def play(self):
-        with self._remote() as remote:
+        with self._remote(delay = 1) as remote:
             remote.control('KEY_PLAY')
 
     def record(self):
